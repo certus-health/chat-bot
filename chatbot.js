@@ -1,6 +1,7 @@
   
 var botui = new BotUI('certus-bot'),
-    studentNum;
+    studentNum,
+    appointmentDate;
 
 function init() {
   botui.message
@@ -44,7 +45,7 @@ function init() {
           }).then(function () {
             botui.message.bot({
               delay: 700,
-              content: 'Your appointment has been set!'
+              content: 'Your appointment is on: ' + appointmentDate
             }).then(init);
           });
         }
@@ -92,6 +93,29 @@ var setAppointment = function () {
             content: res.value
           });
       }
+    // User adds date
+    }).then(function () {
+      return botui.message.bot({
+        delay: 700,
+        content: 'Enter in the date you would like'
+      })
+    }).then(function () {
+      return botui.action.text({
+        delay: 1000,
+        action: {
+          icon: 'calendar',
+          sub_type: 'date',
+          placeholder: 'Enter in a date'
+        }
+      })
+    }).then(appDate = function(date) {
+      appointmentDate = date.value;
+      return botui.message
+        .bot({
+          delay: 700,
+          loading: true,
+          content: date.value
+        });
     }).then(init); // loop to initial state
 }
 
