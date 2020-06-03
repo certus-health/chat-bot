@@ -1,6 +1,6 @@
   
-var botui = new BotUI('thermostat-bot'),
-    temperature = 30;
+var botui = new BotUI('certus-bot'),
+    studentNum;
 
 function init() {
   botui.message
@@ -30,11 +30,24 @@ function init() {
   }).then(function (res) {
     if(res.value == 'make') {
       setAppointment();
-    } else {
-      botui.message.bot({
-        delay: 1200,
-        content: 'Current temperature is: ' + temperature + ' degree'
-      }).then(init);
+    } else if(res.value == 'view'){
+        if(studentNum == null) {
+            botui.message.bot({
+            delay: 1200,
+            content: 'Please enter in a Student Number'
+          }).then(init);
+        }
+        else {
+          botui.message.bot({
+            delay: 1200,
+            content: 'Your Student # is: ' + studentNum
+          }).then(function () {
+            botui.message.bot({
+              delay: 700,
+              content: 'Your appointment has been set!'
+            }).then(init);
+          });
+        }
     }
   });
 }
@@ -45,13 +58,13 @@ var setAppointment = function () {
       delay: 700,
       content: 'Sure, I can help you with that!'
     })
-    .then(function () {
+    .then(stuNum = function () {
       return botui.message.bot({
 	      delay: 700,
 	      content: 'What is your student number?'
       })
     })
-    .then(function () {
+    .then(addStuNum = function () {
       return botui.action.text({
         delay: 1000,
         action: {
@@ -60,14 +73,25 @@ var setAppointment = function () {
           placeholder: 'Enter it here'
         }
       })
-    }).then(function (res) {
-      temperature = res.value; // save new value
-      return botui.message
-        .bot({
-          delay: 1500,
-          loading: true, // pretend like we are doing something
-          content: res.value
-        });
+    }).then(confStuNum = function (res) {
+
+      //If number isn't a 9 digit number or left blank
+      if (res.value.toString().length != 9) {
+        return botui.message.bot({
+          delay: 700,
+          content: 'Please enter in a 9 digit number'
+        }).then(stuNum).then(addStuNum).then(confStuNum)
+      }
+
+      else {
+        studentNum = res.value; // save new value
+        return botui.message
+          .bot({
+            delay: 1500,
+            loading: true, // pretend like we are doing something
+            content: res.value
+          });
+      }
     }).then(init); // loop to initial state
 }
 
